@@ -4,8 +4,8 @@
     <title>Coordinator</title>
 </head>
   <body>
-    {% for event in events %}
-      <p>{{ event['summary'] }}</p>
+    {% for (start, end) in busyTimes %}
+      <p>{{ start+','+end }}</p>
     {% endfor %}
   </body>
 </html>
