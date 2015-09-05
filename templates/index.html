@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Coordinator</title>
+</head>
+  <body>
+    {% for (start, end) in busyTimes %}
+      <p>{{ start+','+end }}</p>
+    {% endfor %}
+  </body>
+</html>
