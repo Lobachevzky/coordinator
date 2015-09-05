@@ -5,9 +5,9 @@ def create_master_dict():
     timeBlocksList = []
     timeBlock = 0
 
-    for i in range(0,48):
+    for i in range(0,96):
         timeBlocksList.append(timeBlock)
-        timeBlock += 0.5
+        timeBlock += 0.25
 
     return dict.fromkeys(timeBlocksList)
 
@@ -19,18 +19,18 @@ def generate_busy_blocks(eventsList):
     busyList = []
     
     for eventTuple in eventsList:
-        n = (eventTuple[1] - eventTuple[0]) / 0.5
+        n = (eventTuple[1] - eventTuple[0]) / 0.25
         start = eventTuple[0]
         for i in range(0,int(n)):
             busyList.append(start)
-            start += 0.5
+            start += 0.25
     return busyList
 
 def busy_to_free (list_of_busy_blocks):
     """
     get a list of one's busy blocks and spit out a list of his/her free times
     """
-    list_of_all_blocks = [x / 2.0 for x in range(0, 48)]
+    list_of_all_blocks = [x / 2.0 for x in range(0, 96)]
     return [block for block in list_of_all_blocks if block not in list_of_busy_blocks]
 
 
@@ -43,6 +43,16 @@ def update_dictionary(list_of_free_blocks, masterDictionary):
     for block in list_of_free_blocks:
         masterDictionary[block] = 1
 
+def return_free_times(masterDictionary):
+    
+    freeBlocksList = []
+    
+    for key in masterDictionary:
+        if masterDictionary[key] == None:
+            freeBlocksList.append(key)
+    return freeBlocksList
+            
+
 eventsList = [[1.5, 4], [2.5, 3.5]]
 
 def main():
@@ -52,7 +62,7 @@ def main():
     
     masterDict = create_master_dict()
     update_dictionary(busy_to_free(generate_busy_blocks(eventsList)), masterDict)
-    print "New Dictionary : %s" %  str(masterDict)
+    print return_free_times(masterDict)
     
 
 if __name__ == '__main__':
