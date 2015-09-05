@@ -1,6 +1,8 @@
 import json
 import datetime
 import httplib2
+import datetime
+import dateutil.parser
 
 from apiclient import discovery
 from oauth2client import client
@@ -10,52 +12,31 @@ from flask.ext.mysql import MySQL
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-api = Api(app)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = SQLAlchemy(app)
 
-class CreateBusyTime(Resource):
-    def post(self): 
-        try:
-            # Parse the arguments 
-            parser = reqparse.RequestParser() 
+class BusyTime(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session = db.Column(db.Integer)
+    start = db.Column(db.DateTime(timezone=False))
+    end = db.Column(db.DateTime(timezone=False))
 
-            parser.add_argument('session', type=int, help='start of busy time') 
-            parser.add_argument('timeMin', type=str, help='start of busy time') 
-            parser.add_argument('timeMax', type=str, help='end of busy time') 
-            parser.add_argument('eventID', type=int, help='end of busy time') 
-            args = parser.parse_args()
+    def __init__(self, session, start, end):
+        self.session = session
+        self.start = start
+        self.end = end
 
-            _session = args['session']
-            _timeMin = args['timeMin'] 
-            _timeMax = args['timeMax']
-            _eventID = args['eventID']
-
-            return {'session': _session,
-                    'timeMin': _timeMin,
-                    'timeMax': _timeMax,
-                    'eventID': _eventID}
-
-        except Exception as e:
-            return {'error': str(e)}
-
-# api.add_resource(CreateBusyTime, '/CreateBusyTime')
-
-# mysql = MySQL()
-# mysql.init_app(app)
-# connmysql.connect()
-# cursor = conn.cursor()
-# cursor.callproc('spCreateBusyTime',(_userEmail,_userPassword))
-# data = cursor.fetchall()
-
-# MySQL configurations
-# app.config['MYSQL_DATABASE_USER'] = 'root'
-# app.config['MYSQL_DATABASE_PASSWORD'] = ''
-# app.config['MYSQL_DATABASE_DB'] = 'Times'
-# app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+    def __repr__(self):
+        return '<Event %r>' % self.id
 
 @app.route('/')
 def index():
+## CLear out old sessions!
+# user SESSION CHANGE THIS #
+    user_session = 1
     timeMin = datetime.datetime.now()
     timeMax = timeMin + datetime.timedelta(days=5, hours=3)
+#user input date range
     timeMin, timeMax = (time.isoformat() + 'Z' for time in (timeMin, timeMax))
 
     if 'credentials' not in session:
@@ -84,32 +65,19 @@ def index():
 
     # events actually retrieves those 10 events
     events = eventsResult.get('items', [])
-    busyTimes = [(event['start']['dateTime'],event['end']['dateTime']) for event in events]
-    
+    for event in events:
+        start, end = (dateutil.parser.parse(event[time]['dateTime']) 
+                for time in ('start','end'))
+        db.session.add(BusyTime(user_session, start, end))
+
     if not events:
         return 'No upcoming events found.'
 
     # renders index.html in the browser and provides the 'events' variable to it
+    busyTimes = [(time.isoformat() for time in (event.start, event.end))
+                                   for event in BusyTime.query.all()]
+#query only the latest session
     return render_template('index.html', busyTimes=busyTimes)
-
-@app.route('/showSignUp')
-def showSignUp():
-    return "hi"
-    return render_template('signup.html')
-
-@app.route('/signUp',methods=['POST'])
-def signUp():
-
-    # read the posted values from the UI
-    _name = request.form['inputName']
-    _email = request.form['inputEmail']
-    _password = request.form['inputPassword']
-
-    # validate the received values
-    if _name and _email and _password:
-        return json.dumps({'html':'<span>All fields good !!</span>'})
-    else:
-        return json.dumps({'html':'<span>Enter the required fields</span>'})
 
 @app.route('/oauth2callback')
 def oauth2callback():
