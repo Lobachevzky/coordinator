@@ -6,6 +6,8 @@ from apiclient import discovery
 from oauth2client import client
 from flask_restful import Resource, Api, reqparse
 from flask import Flask, session, redirect, render_template, url_for, request, json
+from flask.ext.mysql import MySQL
+from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 api = Api(app)
@@ -14,28 +16,48 @@ class CreateBusyTime(Resource):
     def post(self): 
         try:
             # Parse the arguments 
-            api.add_resource(CreateBusyTime, '/CreateBusyTime')
+            parser = reqparse.RequestParser() 
 
-            Parser = reqparse.RequestParser() 
+            parser.add_argument('session', type=int, help='start of busy time') 
             parser.add_argument('timeMin', type=str, help='start of busy time') 
             parser.add_argument('timeMax', type=str, help='end of busy time') 
+            parser.add_argument('eventID', type=int, help='end of busy time') 
             args = parser.parse_args()
 
-            _timeMin = args['timeMin']
+            _session = args['session']
+            _timeMin = args['timeMin'] 
             _timeMax = args['timeMax']
+            _eventID = args['eventID']
 
-            return {'timeMin': args['timeMin'], 'timeMax': args['timeMax']}
+            return {'session': _session,
+                    'timeMin': _timeMin,
+                    'timeMax': _timeMax,
+                    'eventID': _eventID}
 
         except Exception as e:
             return {'error': str(e)}
 
-api.add_resource(CreateBusyTime, '/CreateBusyTime')
+# api.add_resource(CreateBusyTime, '/CreateBusyTime')
+
+# mysql = MySQL()
+# mysql.init_app(app)
+# connmysql.connect()
+# cursor = conn.cursor()
+# cursor.callproc('spCreateBusyTime',(_userEmail,_userPassword))
+# data = cursor.fetchall()
+
+# MySQL configurations
+# app.config['MYSQL_DATABASE_USER'] = 'root'
+# app.config['MYSQL_DATABASE_PASSWORD'] = ''
+# app.config['MYSQL_DATABASE_DB'] = 'Times'
+# app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 
 @app.route('/')
 def index():
-    now = datetime.datetime.now()
-    timeMin = now.isoformat() + 'Z'  # 'Z' indicates UTC timenow
-    timeMax = (now + datetime.timedelta(days=5, hours=3)).isoformat() + 'Z'
+    timeMin = datetime.datetime.now()
+    timeMax = timeMin + datetime.timedelta(days=5, hours=3)
+    timeMin, timeMax = (time.isoformat() + 'Z' for time in (timeMin, timeMax))
+
     if 'credentials' not in session:
 
         # requests access from user
