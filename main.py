@@ -1,4 +1,5 @@
 import csv
+import mail
 
 def does_it_all(inputData):
     """
@@ -105,12 +106,27 @@ def float_to_string(timeFloat):
      return time_in_string
 
 def aggregate_free_blocks(lst_of_floats):
-    string_message = 'These periods are free: ' + float_to_string(lst_of_floats[0])
+    string_message = 'these periods are free for coordination: ' + float_to_string(lst_of_floats[0])
     for i in range (1, len(lst_of_floats)):
         if lst_of_floats[i] - lst_of_floats[i-1] > 0.25:
             string_message+=' to ' + float_to_string(lst_of_floats[i-1] + 0.25) + ', ' + float_to_string(lst_of_floats[i])
     string_message+= ' to ' + float_to_string(lst_of_floats[-1]+0.25)
     return string_message
+
+def send_mail(contentOfMail):
+
+    mail.gmail_user = "penncoordinatorapp"
+    mail.gmail_pwd = "upennmcit"
+    subject = "Coordinate: These are the best times!"
+    content = contentOfMail
+
+    f = open("email_addresses.txt", "r")
+
+    for address in f:
+        address = address.replace("\n","")   
+        mail.mail(address, subject, content)       
+
+    f.close()
     
 
 def main():
@@ -119,8 +135,15 @@ def main():
     """
 
     ryan = does_it_all('times.txt')
+    keysAsList = ryan.keys()
+    keysAsList.sort()
 
-    print ryan['2015-09-09'] 
+    emailContent = ""
+
+    for i in keysAsList:
+        emailContent += 'On' + " " + i + " " + ryan[i] + "\n"
+
+    send_mail(emailContent)
     
 
 if __name__ == '__main__':
