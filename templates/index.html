@@ -1,11 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <title>Coordinator</title>
-</head>
+  <head>
+    <title>Coordinate!!</title>
+     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+ 
+    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link href="../static/signup.css" rel="stylesheet">
+  </head>
+ 
   <body>
-    {% for (start, end) in busyTimes %}
-      <p>{{ start,end }}</p>
-    {% endfor %}
+ 
+    <div class="container">
+ 
+      <div class="jumbotron">
+        <h1>Pick Start and End Date</h1>
+        <form class="form-signin" action="/redirect_to_authorize" method="post">
+        <label for="startDate" class="sr-only">Name</label>
+        <input type="date" name="startDate" id="startDate" class="form-control" placeholder="Date" required autofocus>
+        <label for="endDate" class="sr-only">Name</label>
+        <input type="date" name="endDate" id="endDate" class="form-control" placeholder="Date" required autofocus>
+        <label for="inputEmail1" class="sr-only">Email address</label>
+        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputEmail2" class="sr-only">Email address</label>
+        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+        <label for="inputEmail3" class="sr-only">Email address</label>
+        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+         
+        <button id="btnSignUp" class="btn btn-lg btn-primary btn-block" type="submit">Send emails</button>
+      </form>
+      </div>
+ 
+       
+ 
+      <footer class="footer">
+        <p>&copy; Company 2015</p>
+      </footer>
+ 
+    </div>
   </body>
+  <script src="../static/js/jquery-2.1.4.js"></script>
+  <script src="../static/js/signUp.js"></script>
 </html>
